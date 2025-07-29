@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Aperture Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 400px;
+      margin: auto;
+      background-color: #f9f9f9;
+    }
+    label, select, input {
+      display: block;
+      width: 100%;
+      margin-bottom: 15px;
+      font-size: 1em;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      font-size: 1em;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    h2, h3 {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Aperture Calculator</h2>
+
+  <label>Focal Length (mm):
+    <input type="number" id="focal" value="105">
+  </label>
+
+  <label>Subject Distance (m):
+    <input type="number" id="subject" value="3">
+  </label>
+
+  <label>Background Distance (m):
+    <input type="number" id="background" value="10">
+  </label>
+
+  <label>Sensor Type:
+    <select id="sensor">
+      <option value="36">Full Frame (36 mm)</option>
+      <option value="22.3">Canon APS‑C (22.3 mm)</option>
+      <option value="23.5">Nikon APS‑C (23.5 mm)</option>
+      <option value="17.3">Micro Four Thirds (17.3 mm)</option>
+      <option value="53.7">Phase One IQ3 (53.7 mm)</option>
+    </select>
+  </label>
+
+  <label>Target Blur (% of sensor width):
+    <input type="number" id="blurPercent" value="1.17" step="0.01">
+  </label>
+
+  <button onclick="calculate()">Calculate Aperture</button>
+
+  <h3 id="result"></h3>
+
+<script>
+function calculate () {
+  const f = parseFloat(document.getElementById('focal').value);
+  const S = parseFloat(document.getElementById('subject').value) * 1000;   // m → mm
+  const D = parseFloat(document.getElementById('background').value) * 1000; // m → mm
+  const sensorWidth = parseFloat(document.getElementById('sensor').value);
+  const blurPercent = parseFloat(document.getElementById('blurPercent').value);
+
+  const result = document.getElementById('result');
+
+  // Validate
+  if (isNaN(f) || isNaN(S) || isNaN(D) || isNaN(sensorWidth) || isNaN(blurPercent) ||
+      D <= S || S <= 0 || f <= 0) {
+    result.innerText = '⚠️ Enter valid numbers (background distance must exceed subject).';
+    return;
+  }
+
+  // Desired circle of confusion in mm
+  const CoC = (blurPercent / 100) * sensorWidth;
+
+  // Aperture formula: N = f² (D − S) / (CoC · S · (D − f))
+  const numerator   = f * f * (D - S);
+  const denominator = CoC * S * (D - f);
+
+  if (denominator === 0) {
+    result.innerText = '⚠️ Invalid input — division by zero';
+    return;
+  }
+
+  const N = numerator / denominator;
+
+  result.innerText = 'Required Aperture: f/' + N.toFixed(2);
+}
+</script>
+
+</body>
+</html>
